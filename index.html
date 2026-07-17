@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raytona 500 — Team Metro Race</title>
+<style>
+  :root{
+    --asphalt:#0b0d12; --panel:#171b23; --rail:#2b2f3a;
+    --red:#d81f26; --red-dk:#8f1418; --gold:#e8b23d;
+    --white:#f4f2ee; --gray:#9a9ca8; --gray-dim:#5c5f6b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:var(--asphalt);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--white);}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important;transition-duration:.001ms !important;} }
+
+  .page{max-width:1280px;margin:0 auto;padding:26px 20px 60px;}
+
+  header{position:relative;text-align:center;padding:16px 0 22px;margin-bottom:22px;overflow:hidden;}
+  header::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 60% 70% at 50% 30%, rgba(216,31,38,0.12), transparent 70%);}
+  header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;
+    background:repeating-linear-gradient(90deg,#f4f2ee 0 10px,#15161a 10px 20px);opacity:0.85;}
+  h1 .num{color:var(--red);background:linear-gradient(180deg,#ff5a60,var(--red) 60%,#9c161b);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .flagline{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px;}
+  .flagline .flag{width:26px;height:14px;background:
+    repeating-conic-gradient(#f4f2ee 0% 25%, #15161a 0% 50%) 0 0 / 8px 7px;border:1px solid #00000066;
+    transform:skewX(-12deg);border-radius:2px;}
+  .tag{color:var(--gold);text-transform:uppercase;letter-spacing:3px;font-size:12px;font-weight:700;}
+  .brand{margin-top:34px;font-size:13px;letter-spacing:3px;color:var(--gray);font-weight:700;text-transform:uppercase;}
+  .brand span{color:var(--gray-dim);font-weight:500;letter-spacing:2px;font-size:11px;margin-left:8px;}
+  .ribbon{position:absolute;top:8px;left:-6px;background:var(--red);color:var(--white);font-weight:800;font-style:italic;
+    font-size:13px;letter-spacing:1px;padding:8px 26px 8px 16px;clip-path:polygon(0 0,100% 0,88% 100%,0% 100%);}
+  h1{font-size:52px;line-height:1;margin:8px 0 2px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
+     text-shadow:0 0 30px rgba(216,31,38,.35);}
+  h1 .num{color:var(--red);}
+  .meta{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
+  .meta strong{color:var(--white);}
+
+  .controls{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:16px;}
+  button.raceBtn{background:linear-gradient(180deg,#e5333a,var(--red));color:var(--white);border:none;padding:12px 28px;font-size:13px;font-weight:800;
+    letter-spacing:1.5px;text-transform:uppercase;border-radius:4px;cursor:pointer;box-shadow:0 3px 0 var(--red-dk);transition:transform .08s;}
+  button.raceBtn:active{transform:translateY(3px);box-shadow:0 0 0 var(--red-dk);}
+  button.raceBtn:disabled{opacity:.5;cursor:default;}
+  button.raceBtn.secondary{background:transparent;border:1.5px solid var(--rail);box-shadow:none;color:var(--gray);}
+  .weekBadge{font-size:12px;color:var(--gray);letter-spacing:1px;text-transform:uppercase;min-width:110px;text-align:center;
+    background:#1c2028;border:1px solid var(--rail);border-radius:6px;padding:9px 16px;}
+  .weekBadge strong{color:var(--gold);font-size:14px;}
+
+  .lights{display:flex;justify-content:center;gap:9px;margin-bottom:16px;height:16px;}
+  .lights span{width:14px;height:14px;border-radius:50%;background:#3a1214;transition:background .12s, box-shadow .12s;}
+  .lights span.on{background:var(--red);box-shadow:0 0 16px 4px rgba(216,31,38,.8);}
+
+  .race-area{display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap;}
+  .track-wrap{flex:1 1 800px;position:relative;background:#000;border:1px solid var(--rail);border-radius:16px;
+    overflow:hidden;min-width:320px;transition:transform .15s ease;}
+  .track-wrap.pulse{transform:scale(1.012);}
+  .track-wrap canvas{display:block;width:100%;height:auto;}
+
+  .hud{position:absolute;inset:0;pointer-events:none;}
+  .hud .timer{position:absolute;left:16px;top:14px;background:rgba(10,11,16,.6);border:1px solid rgba(255,255,255,.14);
+    border-radius:6px;padding:6px 12px;font-size:12px;letter-spacing:1px;color:var(--gray);}
+  .hud .timer strong{color:#fff;}
+  .hud .lapBox{position:absolute;right:16px;top:14px;background:rgba(10,11,16,.6);border:1px solid rgba(255,255,255,.14);
+    border-radius:6px;padding:6px 12px;font-size:12px;letter-spacing:1px;color:var(--gray);}
+  .hud .lapBox strong{color:var(--gold);}
+  .hud .leaderTag{position:absolute;left:16px;bottom:14px;background:rgba(10,11,16,.6);border:1px solid rgba(255,255,255,.14);
+    border-radius:6px;padding:8px 14px;display:flex;align-items:center;gap:8px;}
+  .hud .leaderTag .dot{width:10px;height:10px;border-radius:3px;}
+  .hud .leaderTag .txt{font-size:12px;font-weight:700;color:#fff;}
+  .hud .leaderTag .sub{font-size:10px;color:var(--gray);letter-spacing:1px;}
+  .hud .speed{position:absolute;right:16px;bottom:14px;text-align:right;}
+  .hud .speed .num{font-size:42px;font-weight:900;color:#fff;text-shadow:0 0 12px rgba(0,0,0,.85);line-height:1;}
+  .hud .speed .lbl{font-size:10px;color:var(--gold);letter-spacing:2px;font-weight:700;}
+
+  .flash-overlay{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;}
+  .flash-overlay.go{animation:flashGo .5s ease-out;}
+  @keyframes flashGo{ 0%{opacity:.85;} 100%{opacity:0;} }
+
+  .leaderboard{flex:0 0 300px;background:var(--panel);border:1px solid var(--rail);border-radius:16px;padding:16px 16px 6px;}
+  .leaderboard h3{margin:0 0 12px;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);
+    display:flex;align-items:center;gap:8px;}
+  .leaderboard h3::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);}
+  #lbList{display:flex;flex-direction:column;}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid var(--rail);transition:transform .35s ease;}
+  .lb-row:last-child{border-bottom:none;}
+  .lb-pos{width:20px;font-weight:800;font-size:13px;color:var(--gray-dim);}
+  .lb-dot{width:11px;height:11px;border-radius:3px;flex-shrink:0;}
+  .lb-name{flex:1;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .lb-bar{width:60px;height:4px;background:#ffffff14;border-radius:2px;overflow:hidden;}
+  .lb-bar i{display:block;height:100%;border-radius:2px;}
+
+  .barLevels{border-top:1px solid var(--rail);margin-top:6px;padding-bottom:10px;}
+  .bl-grid{display:flex;gap:14px;}
+  .bl-col{flex:1;}
+  .bl-head{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:800;margin-bottom:8px;}
+  .bl-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #ffffff0a;}
+  .bl-row:last-child{border-bottom:none;}
+  .bl-row span{font-size:11px;color:var(--gray);font-weight:600;}
+  .bl-row em{font-style:normal;font-size:11.5px;font-weight:800;color:var(--white);background:#242938;border:1px solid var(--rail);
+    border-radius:4px;padding:2px 8px;font-variant-numeric:tabular-nums;}
+
+  .results{margin-top:34px;opacity:0;transform:translateY(14px);transition:opacity .5s ease, transform .5s ease;}
+  .results.show{opacity:1;transform:translateY(0);}
+  .results h2{text-align:center;font-size:21px;letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;}
+  .results h2::before,.results h2::after{content:"";display:inline-block;width:60px;height:2px;background:var(--red);vertical-align:middle;margin:0 14px;}
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--rail);border-radius:10px;overflow:hidden;font-size:14px;}
+  thead th{text-align:left;padding:11px 16px;background:#1c2028;color:var(--gray);font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:1px;}
+  tbody td{padding:11px 16px;border-top:1px solid var(--rail);}
+  td.rank{font-weight:800;width:36px;}
+  td.name{font-weight:700;}
+  td.code{color:var(--gray);font-size:12px;}
+  td.val{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;}
+  td.sweep{text-align:right;color:#7fb0e6;font-size:12px;}
+  tr.gold td.rank{color:var(--gold);}
+  tr.silver td.rank{color:#c7c9d1;}
+  tr.bronze td.rank{color:#c98a4b;}
+
+  footer{text-align:center;color:var(--gray-dim);font-size:11px;margin-top:26px;letter-spacing:.5px;}
+
+  /* ---------- podium ---------- */
+  .podium{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin-bottom:22px;}
+  .podium .step{flex:0 1 220px;text-align:center;border-radius:12px 12px 0 0;padding:16px 12px 14px;position:relative;
+    background:linear-gradient(180deg,#1e222c,#171b23);border:1px solid var(--rail);border-bottom:4px solid var(--rail);}
+  .podium .step.p1{border-bottom-color:var(--gold);padding-top:26px;}
+  .podium .step.p2{border-bottom-color:#c7c9d1;}
+  .podium .step.p3{border-bottom-color:#c98a4b;}
+  .podium .medal{font-size:22px;font-weight:900;line-height:1;}
+  .podium .p1 .medal{color:var(--gold);font-size:28px;}
+  .podium .p2 .medal{color:#c7c9d1;}
+  .podium .p3 .medal{color:#c98a4b;}
+  .podium .pname{font-size:14px;font-weight:800;margin-top:8px;}
+  .podium .pcode{font-size:10.5px;color:var(--gray);letter-spacing:1px;margin-top:2px;}
+  .podium .pval{font-size:19px;font-weight:900;margin-top:8px;font-variant-numeric:tabular-nums;}
+  .podium .psweep{font-size:11px;color:#7fb0e6;margin-top:3px;min-height:14px;}
+  .podium .pdot{width:12px;height:12px;border-radius:3px;display:inline-block;margin-top:8px;}
+
+  /* ---------- responsive: tablets & phones ---------- */
+  @media (max-width: 900px){
+    .race-area{flex-direction:column;}
+    .track-wrap{flex:1 1 auto;width:100%;}
+    .leaderboard{flex:1 1 auto;width:100%;}
+    h1{font-size:40px;}
+  }
+  @media (max-width: 600px){
+    .page{padding:16px 10px 40px;}
+    h1{font-size:31px;}
+    .brand{font-size:10px;letter-spacing:2px;margin-top:40px;}
+    .brand span{display:block;margin:2px 0 0;font-size:9px;}
+    .tag{font-size:10px;letter-spacing:2px;}
+    .meta{gap:10px;font-size:9.5px;}
+    .ribbon{font-size:11px;padding:6px 20px 6px 12px;}
+    .controls{flex-wrap:wrap;gap:8px;}
+    button.raceBtn{padding:11px 20px;font-size:12px;}
+    .weekBadge{order:3;width:100%;}
+    .hud .speed .num{font-size:26px;}
+    .hud .timer,.hud .lapBox{font-size:10px;padding:4px 8px;}
+    .hud .leaderTag{padding:6px 10px;}
+    .hud .leaderTag .txt{font-size:10.5px;}
+    .podium{gap:8px;}
+    .podium .step{padding:10px 6px 10px;}
+    .podium .pname{font-size:11.5px;}
+    .podium .pval{font-size:14px;}
+    table{font-size:12px;}
+    thead th{padding:8px 8px;font-size:9.5px;}
+    tbody td{padding:8px 8px;}
+    td.sweep{font-size:10px;}
+    .results h2::before,.results h2::after{width:26px;margin:0 8px;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="ribbon">TEAM METRO</div>
+    <div class="brand">RAYMOUR &amp; FLANIGAN <span>FURNITURE | MATTRESSES</span></div>
+    <h1>RAYTONA<span class="num"> 500</span></h1>
+    <div class="flagline"><span class="flag"></span><span class="tag">The Great Mattress Race</span><span class="flag"></span></div>
+    <div class="meta">
+      <div><strong id="weekMetaLabel">Week 2</strong> Standings</div>
+      <div>11 Week Race &middot; Jun 27 – Sep 11</div>
+      <div>Bedding Sales</div>
+    </div>
+  </header>
+
+  <div class="lights" id="lights"><span></span><span></span><span></span><span></span><span></span></div>
+
+  <div class="controls">
+    <button class="raceBtn" id="startBtn">Start Race</button>
+    <div class="weekBadge">Racing for <strong id="weekBadgeLabel">Week 2</strong></div>
+    <button class="raceBtn secondary" id="resetBtn">Reset</button>
+  </div>
+
+  <div class="race-area">
+    <div class="track-wrap" id="trackWrap">
+      <canvas id="canvas"></canvas>
+      <div class="hud">
+        <div class="timer">RACE TIME <strong id="hudTimer">0.0s</strong></div>
+        <div class="lapBox">RACING FOR <strong>WEEK <span id="hudWeek">2</span></strong></div>
+        <div class="leaderTag"><span class="dot" id="hudLeaderDot"></span>
+          <div><div class="txt" id="hudLeaderName">—</div><div class="sub">LEADING</div></div>
+        </div>
+        <div class="speed"><div class="num" id="hudSpeed">0</div><div class="lbl">MPH</div></div>
+      </div>
+      <div class="flash-overlay" id="flashOverlay"></div>
+    </div>
+    <div class="leaderboard">
+      <h3>Live Positions</h3>
+      <div id="lbList"></div>
+      <div class="barLevels">
+        <h3 style="margin-top:18px;">Bar Levels for 2026</h3>
+        <div class="bl-grid">
+          <div class="bl-col">
+            <div class="bl-head">Full Line HFC</div>
+            <div class="bl-row"><span>Bar 5</span><em>$145,000</em></div>
+            <div class="bl-row"><span>Bar 4</span><em>$120,000</em></div>
+            <div class="bl-row"><span>Bar 3</span><em>$90,000</em></div>
+            <div class="bl-row"><span>Bar 2</span><em>$73,000</em></div>
+            <div class="bl-row"><span>Bar 1</span><em>$42,000</em></div>
+          </div>
+          <div class="bl-col">
+            <div class="bl-head">Store</div>
+            <div class="bl-row"><span>Bar 5</span><em>118%</em></div>
+            <div class="bl-row"><span>Bar 4</span><em>115%</em></div>
+            <div class="bl-row"><span>Bar 3</span><em>111%</em></div>
+            <div class="bl-row"><span>Bar 2</span><em>107%</em></div>
+            <div class="bl-row"><span>Bar 1</span><em>103%</em></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <h2>Final Results</h2>
+    <div class="podium" id="podium"></div>
+    <table>
+      <thead><tr><th>Pos</th><th>Driver</th><th>Store</th><th style="text-align:right">Bedding Sales</th><th></th></tr></thead>
+      <tbody id="resultsBody"></tbody>
+    </table>
+  </div>
+
+  <footer>Track live standings in NetSuite &rarr; Raytona dashboard, or on your showroom tracking chart.</footer>
+</div>
+
+<script>
+/* =========================================================================
+   WEEKLY CONFIG — the only block you touch each week.
+   1. Bump WEEK_NUMBER.
+   2. Replace each driver's "bedding" (and "sweep") with that week's numbers.
+   Keep the same colors so cars stay recognizable week to week.
+   ========================================================================= */
+const WEEK_NUMBER = 3;
+
+const drivers = [
+  { name:"Xingchun Gao",         code:"XG1",  bedding:25935.49, sweep:null,    color:"#34a853" },
+  { name:"Victor Solis",         code:"VMS1", bedding:24581.49, sweep:3999.00, color:"#d9a428" },
+  { name:"Md Ferdousur Rahman",  code:"MFR1", bedding:23278.85, sweep:1999.50, color:"#f2871d" },
+  { name:"Yakov Medvedev",       code:"YM3",  bedding:22731.52, sweep:1999.50, color:"#2f6fe0" },
+  { name:"Carolina Pulloni",     code:"CFP",  bedding:20451.44, sweep:null,    color:"#e0333a" },
+  { name:"Shah Almuktadir",      code:"SAA6", bedding:14682.98, sweep:3999.00, color:"#8a4fd1" },
+  { name:"Jack Favia",           code:"JJFB", bedding:10878.38, sweep:2049.50, color:"#1fb6b0" },
+];
+
+const LAPS = 2;              // visual laps the cars circle during the run
+const MIN_DURATION = 8;      // fastest car's total race time (seconds)
+const MAX_DURATION = 10.5;   // slowest car's total race time (seconds)
+/* ========================================================================= */
+
+document.getElementById('weekMetaLabel').textContent = 'Week ' + WEEK_NUMBER;
+document.getElementById('weekBadgeLabel').textContent = 'Week ' + WEEK_NUMBER;
+document.getElementById('hudWeek').textContent = WEEK_NUMBER;
+
+/* ------------------------------------------------------------------
+   BROADCAST-VIEW CANVAS ENGINE
+   Elevated 3/4 view of a banked oval. Cars travel an ellipse in
+   perspective: far side smaller/higher, near side bigger/lower.
+------------------------------------------------------------------ */
+const LW = 1040, LH = 600;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+canvas.width = LW*dpr; canvas.height = LH*dpr;
+canvas.style.width = '100%';
+canvas.style.height = 'auto';
+canvas.style.aspectRatio = LW + ' / ' + LH;
+ctx.scale(dpr,dpr);
+
+/* track ellipse geometry (center line) */
+const T = {
+  cx: LW/2, cy: 330,
+  rx: 400, ry: 150,       // centerline radii
+  width: 78,              // half-width of asphalt band (in "radius" units)
+  squash: 1.0,
+};
+/* perspective scaling: near (bottom, sinθ=+1) big, far (top) small */
+function depthScale(sinT){ return 0.58 + (sinT+1)/2 * 0.62; }  // 0.58 .. 1.20
+/* vertical perspective compression on the far side */
+function ellipsePoint(theta, radiusOffset){
+  const rx = T.rx + radiusOffset;
+  const ry = T.ry + radiusOffset*0.42;
+  const x = T.cx + rx*Math.cos(theta);
+  const y = T.cy + ry*Math.sin(theta);
+  return {x, y, s: depthScale(Math.sin(theta))};
+}
+
+/* progress (0..1 of one lap) -> theta. start/finish at bottom center */
+function progToTheta(p){ return Math.PI/2 + p*Math.PI*2; }
+
+function shade(hex,amt){
+  const c=hex.replace('#',''); const num=parseInt(c,16);
+  let r=(num>>16)+amt, g=((num>>8)&0xff)+amt, b=(num&0xff)+amt;
+  r=Math.max(0,Math.min(255,r)); g=Math.max(0,Math.min(255,g)); b=Math.max(0,Math.min(255,b));
+  return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
+function rand(a,b){ return a+Math.random()*(b-a); }
+
+/* ---------- static background layer (sky, stands, crowd base) ---------- */
+const bg = document.createElement('canvas'); bg.width=LW; bg.height=LH;
+const b = bg.getContext('2d');
+let crowdDots = [];
+(function buildBG(){
+  // night sky
+  const sky = b.createLinearGradient(0,0,0,LH);
+  sky.addColorStop(0,'#07080d'); sky.addColorStop(0.45,'#12151f'); sky.addColorStop(1,'#1a1e2a');
+  b.fillStyle=sky; b.fillRect(0,0,LW,LH);
+  // stars
+  for(let i=0;i<60;i++){ b.fillStyle=`rgba(255,255,255,${rand(0.15,0.5)})`; b.fillRect(rand(0,LW),rand(0,120),1.6,1.6); }
+
+  // outer grandstand ring (drawn as a big band behind the track)
+  b.save();
+  b.beginPath();
+  b.ellipse(T.cx, T.cy-6, T.rx+215, T.ry+140, 0, 0, Math.PI*2);
+  b.ellipse(T.cx, T.cy, T.rx+128, T.ry+86, 0, 0, Math.PI*2);
+  b.clip('evenodd');
+  const standGrad = b.createLinearGradient(0, T.cy-T.ry-140, 0, T.cy+T.ry+140);
+  standGrad.addColorStop(0,'#232837'); standGrad.addColorStop(1,'#161a24');
+  b.fillStyle=standGrad;
+  b.fillRect(0,0,LW,LH);
+  // crowd dots — store positions for live flicker
+  for(let i=0;i<1500;i++){
+    const th = rand(0,Math.PI*2);
+    const rr = rand(0,1);
+    const rx = (T.rx+132) + rr*76, ry = (T.ry+88) + rr*48;
+    const x = T.cx + rx*Math.cos(th);
+    const y = (T.cy-3) + ry*Math.sin(th);
+    if(y<0||y>LH) continue;
+    crowdDots.push({x,y});
+    b.fillStyle = `hsl(${Math.floor(rand(0,360))},40%,${Math.floor(rand(35,70))}%)`;
+    b.fillRect(x,y,2.2,2.2);
+  }
+  b.restore();
+
+  // stadium light towers
+  [[110,90],[LW-110,90],[190,LH-60],[LW-190,LH-60]].forEach(([lx,ly])=>{
+    const glow=b.createRadialGradient(lx,ly,4,lx,ly,180);
+    glow.addColorStop(0,'rgba(255,246,216,0.5)'); glow.addColorStop(1,'rgba(255,246,216,0)');
+    b.fillStyle=glow; b.beginPath(); b.arc(lx,ly,180,0,Math.PI*2); b.fill();
+    b.fillStyle='#4a4f5c'; b.fillRect(lx-3,ly,6,44);
+    b.fillStyle='#fff6d8';
+    [-10,0,10].forEach(off=>{ b.beginPath(); b.arc(lx+off,ly-4,4.4,0,Math.PI*2); b.fill(); });
+  });
+
+  // outer wall with red/white SAFER-barrier stripes
+  b.save();
+  b.beginPath();
+  b.ellipse(T.cx, T.cy, T.rx+128, T.ry+86, 0, 0, Math.PI*2);
+  b.ellipse(T.cx, T.cy, T.rx+112, T.ry+76, 0, 0, Math.PI*2);
+  b.clip('evenodd');
+  for(let th=0; th<Math.PI*2; th+=0.09){
+    const seg = Math.floor(th/0.09);
+    b.fillStyle = seg%2? '#c8ccd4' : '#c22026';
+    const x = T.cx + (T.rx+120)*Math.cos(th);
+    const y = T.cy + (T.ry+81)*Math.sin(th);
+    b.beginPath(); b.arc(x,y,16,0,Math.PI*2); b.fill();
+  }
+  b.restore();
+
+  // asphalt band
+  b.save();
+  b.beginPath();
+  b.ellipse(T.cx, T.cy, T.rx+T.width, T.ry+T.width*0.42, 0, 0, Math.PI*2);
+  b.ellipse(T.cx, T.cy, T.rx-T.width, T.ry-T.width*0.42, 0, 0, Math.PI*2);
+  b.clip('evenodd');
+  const asph = b.createLinearGradient(0, T.cy-T.ry-T.width, 0, T.cy+T.ry+T.width);
+  asph.addColorStop(0,'#4a4e58'); asph.addColorStop(0.5,'#585c66'); asph.addColorStop(1,'#6b6f7a');
+  b.fillStyle=asph; b.fillRect(0,0,LW,LH);
+  // subtle asphalt noise
+  for(let i=0;i<2600;i++){
+    b.fillStyle=`rgba(0,0,0,${rand(0.03,0.10)})`;
+    b.fillRect(rand(0,LW),rand(T.cy-T.ry-T.width,T.cy+T.ry+T.width),1.5,1.5);
+  }
+  // tire skid darkening on corners
+  [[0.22,0.28],[0.72,0.78]].forEach(([a0,a1])=>{
+    for(let i=0;i<26;i++){
+      const p = rand(a0,a1);
+      const th = progToTheta(p);
+      const pt = ellipsePoint(th, rand(-40,40));
+      b.strokeStyle='rgba(0,0,0,0.16)'; b.lineWidth=rand(2,5);
+      b.beginPath(); b.moveTo(pt.x-14,pt.y); b.quadraticCurveTo(pt.x,pt.y+rand(-4,4),pt.x+16,pt.y); b.stroke();
+    }
+  });
+  b.restore();
+
+  // lane dashes (middle of band)
+  b.setLineDash([16,20]);
+  b.strokeStyle='rgba(244,242,238,0.55)'; b.lineWidth=2.4;
+  b.beginPath(); b.ellipse(T.cx,T.cy,T.rx,T.ry,0,0,Math.PI*2); b.stroke();
+  b.setLineDash([]);
+
+  // inner rumble (yellow) + outer rumble (red-white handled by wall)
+  b.strokeStyle='#e8b23d'; b.lineWidth=4;
+  b.beginPath(); b.ellipse(T.cx,T.cy,T.rx-T.width+4,(T.ry-T.width*0.42)+3,0,0,Math.PI*2); b.stroke();
+
+  // infield
+  b.save();
+  b.beginPath(); b.ellipse(T.cx,T.cy,T.rx-T.width-4,T.ry-T.width*0.42-4,0,0,Math.PI*2); b.clip();
+  const inf = b.createLinearGradient(0,T.cy-80,0,T.cy+80);
+  inf.addColorStop(0,'#153722'); inf.addColorStop(1,'#0e2818');
+  b.fillStyle=inf; b.fillRect(0,0,LW,LH);
+  // mowing stripes
+  for(let y=T.cy-90;y<T.cy+90;y+=18){ b.fillStyle='rgba(255,255,255,0.03)'; b.fillRect(T.cx-T.rx,y,T.rx*2,9); }
+  b.fillStyle='#1f4630';
+  b.font='900 46px Arial'; b.textAlign='center'; b.textBaseline='middle'; 
+  b.fillText('TEAM METRO', T.cx, T.cy-12);
+  b.font='800 20px Arial'; b.fillStyle='#2a5a3e';
+  b.fillText('RAYTONA 500 · WEEK '+WEEK_NUMBER, T.cx, T.cy+24);
+  b.restore();
+
+  // start/finish checkered strip at bottom center
+  const sfP = ellipsePoint(Math.PI/2, 0);
+  b.save();
+  b.translate(T.cx, T.cy+T.ry);
+  const sq=8;
+  for(let row=0;row<3;row++){
+    for(let i=-9;i<9;i++){
+      b.fillStyle=(i+row)%2===0?'#f4f2ee':'#15161a';
+      b.fillRect(i*sq, -T.width*0.42+row*sq+18, sq, sq);
+    }
+  }
+  b.restore();
+  // start gantry
+  b.fillStyle='#20242e';
+  b.fillRect(T.cx-90, T.cy+T.ry-38, 8, 60);
+  b.fillRect(T.cx+82, T.cy+T.ry-38, 8, 60);
+  b.fillRect(T.cx-92, T.cy+T.ry-44, 184, 12);
+  b.fillStyle='#e8b23d'; b.font='800 10px Arial'; b.textAlign='center';
+  b.fillText('START / FINISH', T.cx, T.cy+T.ry-35);
+})();
+
+/* ---------- cars ---------- */
+const grid = [...drivers].map((d,i)=>({...d})).sort((a,b)=>b.bedding-a.bedding);
+const maxVal = grid[0].bedding;
+const laneOff = [-30,-20,-10,0,10,20,30]; // radius offsets per car
+
+/* overtake wobble: unique per car, decays to zero by 80% of the race */
+const wob = grid.map((d,i)=>({
+  amp: 0.018 + (i%3)*0.008,
+  freq: rand(1.1,2.1),
+  phase: rand(0,Math.PI*2),
+}));
+
+const lbList = document.getElementById('lbList');
+const lbRows = grid.map((d,idx)=>{
+  const row=document.createElement('div'); row.className='lb-row';
+  row.innerHTML=`<span class="lb-pos">${idx+1}</span><span class="lb-dot" style="background:${d.color}"></span>
+    <span class="lb-name">${d.name}</span><span class="lb-bar"><i style="width:0%;background:${d.color}"></i></span>`;
+  lbList.appendChild(row);
+  return row;
+});
+document.getElementById('hudLeaderDot').style.background=grid[0].color;
+document.getElementById('hudLeaderName').textContent=grid[0].name;
+
+/* motion blur ghosts */
+const ghosts = grid.map(()=>[]);
+const GHOST_N = 6;
+
+/* fireworks + smoke particles */
+let sparks=[], smoke=[];
+function spawnFirework(x,y,baseColor){
+  const n=40;
+  for(let i=0;i<n;i++){
+    const a=rand(0,Math.PI*2), sp=rand(1.4,4.4);
+    sparks.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-1.2,life:1,color: Math.random()<0.5? baseColor : ['#e8b23d','#f4f2ee','#d81f26'][Math.floor(rand(0,3))]});
+  }
+}
+function spawnSmoke(x,y){
+  smoke.push({x:x+rand(-3,3),y:y+rand(-2,2),r:rand(2,4),life:1});
+}
+
+function drawCar(g, x, y, s, angle, color, number, nitro, speedFrac){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(angle);
+  const L=54*s, W2=24*s;
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,0.42)';
+  ctx.beginPath(); ctx.ellipse(0, 5*s, L*0.52, W2*0.5, 0,0,Math.PI*2); ctx.fill();
+  // nitro flame
+  if(nitro){
+    const flick = 0.7+Math.random()*0.6;
+    const fl = L*0.55*flick;
+    const fg = ctx.createLinearGradient(-L*0.5,0,-L*0.5-fl,0);
+    fg.addColorStop(0,'rgba(120,190,255,0.95)');
+    fg.addColorStop(0.5,'rgba(70,120,255,0.6)');
+    fg.addColorStop(1,'rgba(70,120,255,0)');
+    ctx.fillStyle=fg;
+    ctx.beginPath();
+    ctx.moveTo(-L*0.5, -W2*0.28);
+    ctx.lineTo(-L*0.5-fl, 0);
+    ctx.lineTo(-L*0.5, W2*0.28);
+    ctx.closePath(); ctx.fill();
+  }
+  // body
+  const grad=ctx.createLinearGradient(0,-W2*0.6,0,W2*0.6);
+  grad.addColorStop(0, shade(color,65)); grad.addColorStop(0.5,color); grad.addColorStop(1,shade(color,-45));
+  // wheels (under body, poking out)
+  ctx.fillStyle='#0c0d10';
+  const wy=W2*0.46, wx1=L*0.28, wx2=-L*0.32, ww=L*0.16, wh=W2*0.24;
+  [[wx1,-wy],[wx1,wy-wh],[wx2,-wy],[wx2,wy-wh]].forEach(([px,py])=>{
+    ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(px-ww/2,py,ww,wh,wh*0.4); else ctx.rect(px-ww/2,py,ww,wh); ctx.fill();
+  });
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  ctx.moveTo(-L*0.5, -W2*0.42);
+  ctx.lineTo(L*0.28, -W2*0.5);
+  ctx.quadraticCurveTo(L*0.6, -W2*0.3, L*0.62, 0);
+  ctx.quadraticCurveTo(L*0.6, W2*0.3, L*0.28, W2*0.5);
+  ctx.lineTo(-L*0.5, W2*0.42);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,0.35)'; ctx.lineWidth=1; ctx.stroke();
+  // headlights
+  ctx.fillStyle='rgba(255,250,220,0.95)';
+  ctx.beginPath(); ctx.ellipse(L*0.52,-W2*0.2,L*0.05,W2*0.1,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(L*0.52, W2*0.2,L*0.05,W2*0.1,0,0,Math.PI*2); ctx.fill();
+  // spoiler
+  ctx.fillStyle='#15161a';
+  ctx.fillRect(-L*0.56, -W2*0.5, L*0.09, W2);
+  // cockpit canopy with gloss
+  ctx.fillStyle='#101116';
+  ctx.beginPath();
+  ctx.ellipse(L*0.02, 0, L*0.17, W2*0.32, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(160,200,255,0.28)';
+  ctx.beginPath();
+  ctx.ellipse(L*0.06, -W2*0.08, L*0.10, W2*0.13, -0.3, 0, Math.PI*2); ctx.fill();
+  // racing stripe
+  ctx.fillStyle='rgba(255,255,255,0.28)';
+  ctx.fillRect(-L*0.5, -W2*0.06, L*1.02, W2*0.12);
+  // number roundel
+  ctx.fillStyle='#f4f2ee';
+  ctx.beginPath(); ctx.arc(-L*0.22, 0, W2*0.34, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle='#111'; ctx.font=`800 ${Math.max(7,W2*0.5)}px Arial`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(number, -L*0.22, 0.5);
+  ctx.restore();
+}
+
+/* speed lines overlay */
+function drawSpeedLines(intensity){
+  if(intensity<=0) return;
+  ctx.save();
+  ctx.strokeStyle=`rgba(255,255,255,${0.05*intensity})`;
+  ctx.lineWidth=1.4;
+  for(let i=0;i<14;i++){
+    const y=rand(0,LH), len=rand(60,190)*intensity;
+    const x=Math.random()<0.5? rand(0,140) : rand(LW-140,LW);
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+ (x<LW/2? -len : len), y); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* crowd flicker */
+function drawCrowdFlicker(){
+  for(let i=0;i<26;i++){
+    const dot=crowdDots[Math.floor(Math.random()*crowdDots.length)];
+    if(!dot) continue;
+    ctx.fillStyle=`rgba(255,255,255,${rand(0.25,0.7)})`;
+    ctx.fillRect(dot.x,dot.y,2.2,2.2);
+  }
+}
+
+function renderScene(fracs, elapsed, racing){
+  ctx.clearRect(0,0,LW,LH);
+  ctx.drawImage(bg,0,0);
+  if(racing) drawCrowdFlicker();
+
+  // update + draw smoke (under cars)
+  smoke.forEach(p=>{ p.life-=0.03; p.r+=0.25; });
+  smoke=smoke.filter(p=>p.life>0);
+  smoke.forEach(p=>{
+    ctx.fillStyle=`rgba(190,190,196,${p.life*0.28})`;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+  });
+
+  // compute car positions
+  const cars = fracs.map((f,i)=>{
+    const lapP = (f*LAPS) % 1;
+    const th = progToTheta(lapP);
+    const pt = ellipsePoint(th, laneOff[i]);
+    // heading = tangent of ellipse
+    const rx=T.rx+laneOff[i], ry=T.ry+laneOff[i]*0.42;
+    const angle=Math.atan2(ry*Math.cos(th), -rx*Math.sin(th));
+    return {i, ...pt, angle, f};
+  });
+
+  // ghosts (motion blur) — record positions, draw faded copies first
+  cars.forEach(c=>{
+    if(racing){
+      ghosts[c.i].unshift({x:c.x,y:c.y,s:c.s,angle:c.angle});
+      if(ghosts[c.i].length>GHOST_N) ghosts[c.i].pop();
+      if(Math.random()<0.5) spawnSmoke(c.x - Math.cos(c.angle)*26*c.s, c.y - Math.sin(c.angle)*26*c.s);
+    }
+  });
+  ctx.save();
+  cars.forEach(c=>{
+    ghosts[c.i].forEach((g0,gi)=>{
+      if(gi===0) return;
+      ctx.globalAlpha = 0.10*(1-gi/GHOST_N);
+      drawCar(null, g0.x, g0.y, g0.s, g0.angle, grid[c.i].color, c.i+1, false, 0);
+    });
+  });
+  ctx.restore();
+  ctx.globalAlpha=1;
+
+  // draw near cars over far cars
+  cars.sort((a,b)=>a.y-b.y);
+  cars.forEach(c=>{
+    drawCar(null, c.x, c.y, c.s, c.angle, grid[c.i].color, c.i+1, racing, c.f);
+  });
+
+  // update + draw fireworks (over everything)
+  sparks.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.06; p.life-=0.018; });
+  sparks=sparks.filter(p=>p.life>0);
+  sparks.forEach(p=>{
+    ctx.globalAlpha=Math.max(0,p.life);
+    ctx.fillStyle=p.color;
+    ctx.fillRect(p.x,p.y,2.6,2.6);
+  });
+  ctx.globalAlpha=1;
+}
+
+/* ------------------------------------------------------------------ race control */
+const startBtn=document.getElementById('startBtn'), resetBtn=document.getElementById('resetBtn');
+const lightsEl=document.getElementById('lights'), resultsEl=document.getElementById('results'), resultsBody=document.getElementById('resultsBody');
+const trackWrap=document.getElementById('trackWrap'), flashOverlay=document.getElementById('flashOverlay');
+const hudTimer=document.getElementById('hudTimer'), hudSpeed=document.getElementById('hudSpeed');
+
+let raf=null, fireworkTimer=null;
+
+const durations = grid.map(d=> MIN_DURATION + (1-d.bedding/maxVal)*(MAX_DURATION-MIN_DURATION));
+const maxDur = Math.max(...durations);
+
+function progressAt(i, t){
+  const base = Math.min(t/durations[i], 1);
+  if(base>=1) return 1;
+  // overtake wobble, decays to 0 by 80% of that car's race
+  const decay = Math.max(0, 1 - base/0.8);
+  const w = wob[i].amp * Math.sin(wob[i].freq*t + wob[i].phase) * decay;
+  return Math.max(0, Math.min(base + w, 0.999));
+}
+
+function resetRace(){
+  if(raf) cancelAnimationFrame(raf);
+  if(fireworkTimer) clearInterval(fireworkTimer);
+  sparks=[]; smoke=[];
+  ghosts.forEach(g=>g.length=0);
+  grid.forEach((d,idx)=>{ lbRows[idx].querySelector('.lb-pos').textContent=idx+1;
+    lbRows[idx].querySelector('i').style.width='0%'; lbRows[idx].style.order=idx; });
+  [...lightsEl.children].forEach(l=>l.classList.remove('on'));
+  resultsEl.classList.remove('show'); resultsBody.innerHTML=''; document.getElementById('podium').innerHTML='';
+  hudTimer.textContent='0.0s'; hudSpeed.textContent='0';
+  startBtn.disabled=false;
+  renderScene(grid.map((d,i)=> i*0.006 ), 0, false); // staggered grid formation at the line
+}
+
+function startRace(){
+  startBtn.disabled=true; resetRace();
+  let step=0;
+  const seq=setInterval(()=>{
+    if(step<lightsEl.children.length){ lightsEl.children[step].classList.add('on'); step++; }
+    else{
+      clearInterval(seq);
+      [...lightsEl.children].forEach(l=>l.classList.remove('on'));
+      flashOverlay.classList.remove('go'); void flashOverlay.offsetWidth; flashOverlay.classList.add('go');
+      trackWrap.classList.add('pulse'); setTimeout(()=>trackWrap.classList.remove('pulse'),150);
+      runRace();
+    }
+  },380);
+}
+
+function runRace(){
+  const start=performance.now();
+  const finished=new Set();
+  let winnerCelebrated=false;
+
+  function frame(now){
+    const t=(now-start)/1000;
+    const fracs = grid.map((d,i)=>progressAt(i,t));
+
+    // leaderboard: rank by effective distance
+    const order = grid.map((d,i)=>({i, f:fracs[i], done: t>=durations[i]}))
+      .sort((a,b)=> (b.done - a.done) || (b.f - a.f) || (durations[a.i]-durations[b.i]));
+    order.forEach((o,pos)=>{
+      lbRows[o.i].style.order=pos;
+      lbRows[o.i].querySelector('.lb-pos').textContent=pos+1;
+      lbRows[o.i].querySelector('i').style.width=(fracs[o.i]*100)+'%';
+    });
+
+    // HUD
+    hudTimer.textContent=t.toFixed(1)+'s';
+    const leader=order[0];
+    document.getElementById('hudLeaderDot').style.background=grid[leader.i].color;
+    document.getElementById('hudLeaderName').textContent=grid[leader.i].name;
+    hudSpeed.textContent=Math.round(148 + (grid[leader.i].bedding/maxVal)*46 + Math.sin(t*7)*3);
+
+    // winner fireworks
+    grid.forEach((d,i)=>{
+      if(t>=durations[i] && !finished.has(i)){
+        finished.add(i);
+        if(!winnerCelebrated){
+          winnerCelebrated=true;
+          const sf = ellipsePoint(Math.PI/2, laneOff[i]);
+          spawnFirework(sf.x, sf.y-120, d.color);
+          fireworkTimer=setInterval(()=>{
+            spawnFirework(rand(180,LW-180), rand(60,190), grid[Math.floor(rand(0,grid.length))].color);
+          }, 550);
+          setTimeout(()=>{ if(fireworkTimer) clearInterval(fireworkTimer); fireworkTimer=null; }, 4500);
+        }
+      }
+    });
+
+    const speedIntensity = Math.min(1, t/2) * (t<maxDur?1:0.3);
+    renderScene(fracs, t, t<maxDur);
+    drawSpeedLines(speedIntensity);
+
+    if(t<maxDur+1){ raf=requestAnimationFrame(frame); }
+    else{
+      renderScene(grid.map(()=>0.999), t, false);
+      setTimeout(showResults, 300);
+      startBtn.disabled=false;
+    }
+  }
+  raf=requestAnimationFrame(frame);
+}
+
+function showResults(){
+  const ranked=[...drivers].sort((a,b)=>b.bedding-a.bedding);
+  // podium: silver left, gold center, bronze right
+  const top3=[ranked[1],ranked[0],ranked[2]];
+  const cls3=['p2','p1','p3'];
+  const medals=['P2','P1','P3'];
+  document.getElementById('podium').innerHTML = top3.map((d,i)=>`
+    <div class="step ${cls3[i]}">
+      <div class="medal">${medals[i]}</div>
+      <div class="pname">${d.name}</div>
+      <div class="pcode">${d.code}</div>
+      <div class="pval">$${d.bedding.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+      <div class="psweep">${d.sweep? '+ $'+d.sweep.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' sweepstakes':''}</div>
+      <span class="pdot" style="background:${d.color}"></span>
+    </div>`).join('');
+  resultsBody.innerHTML=ranked.map((d,i)=>{
+    const cls=i===0?'gold':i===1?'silver':i===2?'bronze':'';
+    return `<tr class="${cls}"><td class="rank">P${i+1}</td><td class="name">${d.name}</td><td class="code">${d.code}</td>
+      <td class="val">$${d.bedding.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td class="sweep">${d.sweep? '+ $'+d.sweep.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' sweepstakes':''}</td></tr>`;
+  }).join('');
+  resultsEl.classList.add('show');
+  resultsEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+startBtn.addEventListener('click', startRace);
+resetBtn.addEventListener('click', resetRace);
+resetRace();
+</script>
+</body>
+</html>
