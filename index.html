@@ -16,7 +16,18 @@
 
   .page{max-width:1280px;margin:0 auto;padding:26px 20px 60px;}
 
-  header{position:relative;text-align:center;padding:16px 0 22px;border-bottom:1px solid var(--rail);margin-bottom:22px;}
+  header{position:relative;text-align:center;padding:16px 0 22px;margin-bottom:22px;overflow:hidden;}
+  header::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(ellipse 60% 70% at 50% 30%, rgba(216,31,38,0.12), transparent 70%);}
+  header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:8px;
+    background:repeating-linear-gradient(90deg,#f4f2ee 0 10px,#15161a 10px 20px);opacity:0.85;}
+  h1 .num{color:var(--red);background:linear-gradient(180deg,#ff5a60,var(--red) 60%,#9c161b);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+  .flagline{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:8px;}
+  .flagline .flag{width:26px;height:14px;background:
+    repeating-conic-gradient(#f4f2ee 0% 25%, #15161a 0% 50%) 0 0 / 8px 7px;border:1px solid #00000066;
+    transform:skewX(-12deg);border-radius:2px;}
+  .tag{color:var(--gold);text-transform:uppercase;letter-spacing:3px;font-size:12px;font-weight:700;}
   .brand{margin-top:34px;font-size:13px;letter-spacing:3px;color:var(--gray);font-weight:700;text-transform:uppercase;}
   .brand span{color:var(--gray-dim);font-weight:500;letter-spacing:2px;font-size:11px;margin-left:8px;}
   .ribbon{position:absolute;top:8px;left:-6px;background:var(--red);color:var(--white);font-weight:800;font-style:italic;
@@ -24,7 +35,6 @@
   h1{font-size:52px;line-height:1;margin:8px 0 2px;font-weight:900;letter-spacing:1px;text-transform:uppercase;
      text-shadow:0 0 30px rgba(216,31,38,.35);}
   h1 .num{color:var(--red);}
-  .tag{color:var(--gold);text-transform:uppercase;letter-spacing:3px;font-size:12px;font-weight:700;margin-top:6px;}
   .meta{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--gray);text-transform:uppercase;letter-spacing:1px;}
   .meta strong{color:var(--white);}
 
@@ -80,6 +90,16 @@
   .lb-name{flex:1;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .lb-bar{width:60px;height:4px;background:#ffffff14;border-radius:2px;overflow:hidden;}
   .lb-bar i{display:block;height:100%;border-radius:2px;}
+
+  .barLevels{border-top:1px solid var(--rail);margin-top:6px;padding-bottom:10px;}
+  .bl-grid{display:flex;gap:14px;}
+  .bl-col{flex:1;}
+  .bl-head{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);font-weight:800;margin-bottom:8px;}
+  .bl-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #ffffff0a;}
+  .bl-row:last-child{border-bottom:none;}
+  .bl-row span{font-size:11px;color:var(--gray);font-weight:600;}
+  .bl-row em{font-style:normal;font-size:11.5px;font-weight:800;color:var(--white);background:#242938;border:1px solid var(--rail);
+    border-radius:4px;padding:2px 8px;font-variant-numeric:tabular-nums;}
 
   .results{margin-top:34px;opacity:0;transform:translateY(14px);transition:opacity .5s ease, transform .5s ease;}
   .results.show{opacity:1;transform:translateY(0);}
@@ -157,7 +177,7 @@
     <div class="ribbon">TEAM METRO</div>
     <div class="brand">RAYMOUR &amp; FLANIGAN <span>FURNITURE | MATTRESSES</span></div>
     <h1>RAYTONA<span class="num"> 500</span></h1>
-    <div class="tag">The Great Mattress Race</div>
+    <div class="flagline"><span class="flag"></span><span class="tag">The Great Mattress Race</span><span class="flag"></span></div>
     <div class="meta">
       <div><strong id="weekMetaLabel">Week 2</strong> Standings</div>
       <div>11 Week Race &middot; Jun 27 – Sep 11</div>
@@ -189,6 +209,27 @@
     <div class="leaderboard">
       <h3>Live Positions</h3>
       <div id="lbList"></div>
+      <div class="barLevels">
+        <h3 style="margin-top:18px;">Bar Levels for 2026</h3>
+        <div class="bl-grid">
+          <div class="bl-col">
+            <div class="bl-head">Full Line HFC</div>
+            <div class="bl-row"><span>Bar 5</span><em>$145,000</em></div>
+            <div class="bl-row"><span>Bar 4</span><em>$120,000</em></div>
+            <div class="bl-row"><span>Bar 3</span><em>$90,000</em></div>
+            <div class="bl-row"><span>Bar 2</span><em>$73,000</em></div>
+            <div class="bl-row"><span>Bar 1</span><em>$42,000</em></div>
+          </div>
+          <div class="bl-col">
+            <div class="bl-head">Store</div>
+            <div class="bl-row"><span>Bar 5</span><em>118%</em></div>
+            <div class="bl-row"><span>Bar 4</span><em>115%</em></div>
+            <div class="bl-row"><span>Bar 3</span><em>111%</em></div>
+            <div class="bl-row"><span>Bar 2</span><em>107%</em></div>
+            <div class="bl-row"><span>Bar 1</span><em>103%</em></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -211,16 +252,16 @@
    2. Replace each driver's "bedding" (and "sweep") with that week's numbers.
    Keep the same colors so cars stay recognizable week to week.
    ========================================================================= */
-const WEEK_NUMBER = 2;
+const WEEK_NUMBER = 3;
 
 const drivers = [
-  { name:"Victor Solis",         code:"VMS1", bedding:20741.02, sweep:1999.50, color:"#d9a428" },
-  { name:"Yakov Medvedev",       code:"YM3",  bedding:20706.02, sweep:1999.50, color:"#2f6fe0" },
-  { name:"Carolina Pulloni",     code:"CFP",  bedding:18256.40, sweep:null,    color:"#e0333a" },
-  { name:"Xingchun Gao",         code:"XG1",  bedding:15399.04, sweep:null,    color:"#34a853" },
-  { name:"Md Ferdousur Rahman",  code:"MFR1", bedding:12608.90, sweep:null,    color:"#f2871d" },
+  { name:"Xingchun Gao",         code:"XG1",  bedding:25935.49, sweep:null,    color:"#34a853" },
+  { name:"Victor Solis",         code:"VMS1", bedding:24581.49, sweep:3999.00, color:"#d9a428" },
+  { name:"Md Ferdousur Rahman",  code:"MFR1", bedding:23278.85, sweep:1999.50, color:"#f2871d" },
+  { name:"Yakov Medvedev",       code:"YM3",  bedding:22731.52, sweep:1999.50, color:"#2f6fe0" },
+  { name:"Carolina Pulloni",     code:"CFP",  bedding:20451.44, sweep:null,    color:"#e0333a" },
+  { name:"Shah Almuktadir",      code:"SAA6", bedding:14682.98, sweep:3999.00, color:"#8a4fd1" },
   { name:"Jack Favia",           code:"JJFB", bedding:10878.38, sweep:2049.50, color:"#1fb6b0" },
-  { name:"Shah Almuktadir",      code:"SAA6", bedding:10583.97, sweep:3999.00, color:"#8a4fd1" },
 ];
 
 const LAPS = 2;              // visual laps the cars circle during the run
