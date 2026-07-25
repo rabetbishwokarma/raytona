@@ -90,6 +90,8 @@
   .lb-name{flex:1;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .lb-bar{width:60px;height:4px;background:#ffffff14;border-radius:2px;overflow:hidden;}
   .lb-bar i{display:block;height:100%;border-radius:2px;}
+  .barBadge{display:inline-block;background:linear-gradient(180deg,#f2cf6b,#c9982a);color:#241a04;font-style:normal;
+    font-size:9.5px;font-weight:900;letter-spacing:.5px;border-radius:3px;padding:1.5px 6px;vertical-align:middle;}
 
   .barLevels{border-top:1px solid var(--rail);margin-top:6px;padding-bottom:10px;}
   .bl-grid{display:flex;gap:14px;}
@@ -237,7 +239,7 @@
     <h2>Final Results</h2>
     <div class="podium" id="podium"></div>
     <table>
-      <thead><tr><th>Pos</th><th>Driver</th><th>Store</th><th style="text-align:right">Bedding Sales</th><th></th></tr></thead>
+      <thead><tr><th>Pos</th><th>Driver</th><th>Gers</th><th style="text-align:right">Bedding Sales</th><th></th></tr></thead>
       <tbody id="resultsBody"></tbody>
     </table>
   </div>
@@ -252,16 +254,16 @@
    2. Replace each driver's "bedding" (and "sweep") with that week's numbers.
    Keep the same colors so cars stay recognizable week to week.
    ========================================================================= */
-const WEEK_NUMBER = 3;
+const WEEK_NUMBER = 4;
 
 const drivers = [
-  { name:"Xingchun Gao",         code:"XG1",  bedding:25935.49, sweep:null,    color:"#34a853" },
-  { name:"Victor Solis",         code:"VMS1", bedding:24581.49, sweep:3999.00, color:"#d9a428" },
-  { name:"Md Ferdousur Rahman",  code:"MFR1", bedding:23278.85, sweep:1999.50, color:"#f2871d" },
-  { name:"Yakov Medvedev",       code:"YM3",  bedding:22731.52, sweep:1999.50, color:"#2f6fe0" },
-  { name:"Carolina Pulloni",     code:"CFP",  bedding:20451.44, sweep:null,    color:"#e0333a" },
-  { name:"Shah Almuktadir",      code:"SAA6", bedding:14682.98, sweep:3999.00, color:"#8a4fd1" },
-  { name:"Jack Favia",           code:"JJFB", bedding:10878.38, sweep:2049.50, color:"#1fb6b0" },
+  { name:"Md Ferdousur Rahman", code:"MFR1", bedding:38575.88, sweep:"$5,898.50", bar:null, color:"#f2871d" },
+  { name:"Shah Almuktadir", code:"SAA6", bedding:29670.71, sweep:"1 Entry Earned", bar:null, color:"#8a4fd1" },
+  { name:"Xingchun Gao", code:"XG1", bedding:28459.59, sweep:null, bar:null, color:"#34a853" },
+  { name:"Carolina Pulloni", code:"CFP", bedding:27991.89, sweep:null, bar:null, color:"#e0333a" },
+  { name:"Victor Solis", code:"VMS1", bedding:27272.69, sweep:"$3,999.00", bar:null, color:"#d9a428" },
+  { name:"Yakov Medvedev", code:"YM3", bedding:24676.62, sweep:"$1,999.50", bar:null, color:"#2f6fe0" },
+  { name:"Jack Favia", code:"JJFB", bedding:13998.13, sweep:"$2,049.50", bar:null, color:"#1fb6b0" },
 ];
 
 const LAPS = 2;              // visual laps the cars circle during the run
@@ -757,14 +759,14 @@ function showResults(){
       <div class="pname">${d.name}</div>
       <div class="pcode">${d.code}</div>
       <div class="pval">$${d.bedding.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
-      <div class="psweep">${d.sweep? '+ $'+d.sweep.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' sweepstakes':''}</div>
+      <div class="psweep">${d.bar? '<b class="barBadge">'+d.bar+'</b> ' : ''}${d.sweep? (d.sweep.startsWith('$')? '+ '+d.sweep+' sweepstakes' : d.sweep) : ''}</div>
       <span class="pdot" style="background:${d.color}"></span>
     </div>`).join('');
   resultsBody.innerHTML=ranked.map((d,i)=>{
     const cls=i===0?'gold':i===1?'silver':i===2?'bronze':'';
     return `<tr class="${cls}"><td class="rank">P${i+1}</td><td class="name">${d.name}</td><td class="code">${d.code}</td>
       <td class="val">$${d.bedding.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-      <td class="sweep">${d.sweep? '+ $'+d.sweep.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+' sweepstakes':''}</td></tr>`;
+      <td class="sweep">${d.bar? '<b class="barBadge">'+d.bar+'</b> ' : ''}${d.sweep? (d.sweep.startsWith('$')? '+ '+d.sweep+' sweepstakes' : d.sweep) : ''}</td></tr>`;
   }).join('');
   resultsEl.classList.add('show');
   resultsEl.scrollIntoView({behavior:'smooth', block:'nearest'});
