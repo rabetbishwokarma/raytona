@@ -121,6 +121,35 @@
 
   footer{text-align:center;color:var(--gray-dim);font-size:11px;margin-top:26px;letter-spacing:.5px;}
 
+  /* ---------- finale ---------- */
+  .champBanner{display:none;position:relative;overflow:hidden;margin-bottom:20px;padding:22px 18px;text-align:center;
+    border-radius:14px;border:1px solid #4a3a12;
+    background:linear-gradient(135deg,#2a2210,#1c1a12 45%,#241d0d);}
+  .champBanner::before{content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse 55% 80% at 50% 0%, rgba(232,178,61,0.22), transparent 70%);}
+  .champBanner .cbTop{position:relative;font-size:10.5px;letter-spacing:4px;color:var(--gold);font-weight:800;}
+  .champBanner .cbName{position:relative;font-size:30px;font-weight:900;margin-top:6px;letter-spacing:.5px;
+    background:linear-gradient(180deg,#fff7e0,#e8b23d 70%,#b98216);-webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;}
+  .champBanner .cbVal{position:relative;font-size:15px;color:#e8d9a8;margin-top:6px;font-variant-numeric:tabular-nums;font-weight:700;}
+  .champBanner .cbFlags{position:relative;display:flex;justify-content:center;gap:10px;margin-top:12px;}
+  .champBanner .cbFlags i{width:30px;height:16px;display:block;border-radius:2px;transform:skewX(-12deg);
+    background:repeating-conic-gradient(#f4f2ee 0% 25%, #15161a 0% 50%) 0 0 / 8px 8px;border:1px solid #00000066;}
+  body.finale .champBanner{display:block;}
+
+  .seasonStats{display:none;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 4px;}
+  body.finale .seasonStats{display:grid;}
+  .seasonStats .st{background:var(--panel);border:1px solid var(--rail);border-radius:10px;padding:14px 10px;text-align:center;}
+  .seasonStats .stVal{font-size:21px;font-weight:900;font-variant-numeric:tabular-nums;}
+  .seasonStats .stLbl{font-size:9.5px;letter-spacing:1.5px;color:var(--gray);text-transform:uppercase;margin-top:5px;font-weight:700;}
+  body.finale .podium .p1{box-shadow:0 0 34px rgba(232,178,61,0.28);}
+  body.finale .podium .p1 .medal::after{content:" 🏆";}
+  @media (max-width:600px){
+    .champBanner .cbName{font-size:21px;}
+    .seasonStats{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .seasonStats .stVal{font-size:17px;}
+  }
+
   /* ---------- podium ---------- */
   .podium{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin-bottom:22px;}
   .podium .step{flex:0 1 220px;text-align:center;border-radius:12px 12px 0 0;padding:16px 12px 14px;position:relative;
@@ -237,7 +266,9 @@
 
   <div class="results" id="results">
     <h2>Final Results</h2>
+    <div class="champBanner" id="champBanner"></div>
     <div class="podium" id="podium"></div>
+    <div class="seasonStats" id="seasonStats"></div>
     <table>
       <thead><tr><th>Pos</th><th>Driver</th><th>Gers</th><th style="text-align:right">Bedding Sales</th><th></th></tr></thead>
       <tbody id="resultsBody"></tbody>
@@ -254,16 +285,18 @@
    2. Replace each driver's "bedding" (and "sweep") with that week's numbers.
    Keep the same colors so cars stay recognizable week to week.
    ========================================================================= */
-const WEEK_NUMBER = 7;
+const WEEK_NUMBER = 11;
+const IS_FINAL = true;   // season finale — set false and bump WEEK_NUMBER for a normal week
 
 const drivers = [
-  { name:"Md Ferdousur Rahman", code:"MFR1", bedding:60707.58, sweep:"1 Entry Earned", bar:"BAR I", color:"#f2871d" },
-  { name:"Shah Almuktadir", code:"SAA6", bedding:52562.97, sweep:"1 Entry Earned", bar:"BAR I", color:"#8a4fd1" },
-  { name:"Carolina Pulloni", code:"CFP", bedding:46505.65, sweep:"$2,049.00", bar:"BAR I", color:"#e0333a" },
-  { name:"Xingchun Gao", code:"XG1", bedding:43075.72, sweep:null, bar:"BAR I", color:"#34a853" },
-  { name:"Victor Solis", code:"VMS1", bedding:42971.75, sweep:"1 Entry Earned", bar:"BAR I", color:"#d9a428" },
-  { name:"Yakov Medvedev", code:"YM3", bedding:41848.57, sweep:"$5,598.50", bar:null, color:"#2f6fe0" },
-  { name:"Jack Favia", code:"JJFB", bedding:26354.73, sweep:"$2,049.50", bar:null, color:"#1fb6b0" },
+  { name:"Md Ferdousur Rahman", code:"MFR1", bedding:104723.94, sweep:"1 Entry Earned", bar:"BAR III", color:"#f2871d" },
+  { name:"Xingchun Gao", code:"XG1", bedding:77479.85, sweep:"$3,199.00", bar:"BAR II", color:"#34a853" },
+  { name:"Carolina Pulloni", code:"CFP", bedding:75643.46, sweep:"1 Entry Earned", bar:"BAR II", color:"#e0333a" },
+  { name:"Victor Solis", code:"VMS1", bedding:74139.77, sweep:"1 Entry Earned", bar:"BAR II", color:"#d9a428" },
+  { name:"Yakov Medvedev", code:"YM3", bedding:71565.01, sweep:"1 Entry Earned", bar:"BAR I", color:"#2f6fe0" },
+  { name:"Shah Almuktadir", code:"SAA6", bedding:62198.91, sweep:"1 Entry Earned", bar:"BAR I", color:"#8a4fd1" },
+  { name:"Jack Favia", code:"JJFB", bedding:45139.38, sweep:"$2,049.50", bar:"BAR I", color:"#1fb6b0" },
+  { name:"Eninta Pogianni", code:"EPO1", bedding:24534.99, sweep:null, bar:null, color:"#e0479e" },
 ];
 
 const LAPS = 2;              // visual laps the cars circle during the run
@@ -271,9 +304,16 @@ const MIN_DURATION = 8;      // fastest car's total race time (seconds)
 const MAX_DURATION = 10.5;   // slowest car's total race time (seconds)
 /* ========================================================================= */
 
-document.getElementById('weekMetaLabel').textContent = 'Week ' + WEEK_NUMBER;
-document.getElementById('weekBadgeLabel').textContent = 'Week ' + WEEK_NUMBER;
-document.getElementById('hudWeek').textContent = WEEK_NUMBER;
+document.getElementById('weekMetaLabel').textContent = IS_FINAL ? 'FINAL' : 'Week ' + WEEK_NUMBER;
+document.getElementById('weekBadgeLabel').textContent = IS_FINAL ? 'THE FINISH' : 'Week ' + WEEK_NUMBER;
+document.getElementById('hudWeek').textContent = IS_FINAL ? 'FINAL LAP' : WEEK_NUMBER;
+if(IS_FINAL){
+  document.querySelector('.weekBadge').innerHTML = 'Racing for <strong>BAR 5</strong>';
+  document.querySelector('.lapBox').innerHTML = '<strong>FINAL RACE</strong> · SEASON FINALE';
+  document.querySelector('#results h2').textContent = 'Final Season Standings';
+  document.querySelector('.meta').firstElementChild.innerHTML = '<strong>FINAL</strong> Standings';
+  document.body.classList.add('finale');
+}
 
 /* ------------------------------------------------------------------
    BROADCAST-VIEW CANVAS ENGINE
@@ -428,7 +468,7 @@ let crowdDots = [];
   b.font='900 46px Arial'; b.textAlign='center'; b.textBaseline='middle'; 
   b.fillText('TEAM METRO', T.cx, T.cy-12);
   b.font='800 20px Arial'; b.fillStyle='#2a5a3e';
-  b.fillText('RAYTONA 500 · WEEK '+WEEK_NUMBER, T.cx, T.cy+24);
+  b.fillText(IS_FINAL ? 'RAYTONA 500 · FINAL RESULTS' : 'RAYTONA 500 · WEEK '+WEEK_NUMBER, T.cx, T.cy+24);
   b.restore();
 
   // start/finish checkered strip at bottom center
@@ -455,7 +495,7 @@ let crowdDots = [];
 /* ---------- cars ---------- */
 const grid = [...drivers].map((d,i)=>({...d})).sort((a,b)=>b.bedding-a.bedding);
 const maxVal = grid[0].bedding;
-const laneOff = [-30,-20,-10,0,10,20,30]; // radius offsets per car
+const laneOff = Array.from({length:drivers.length},(_,i)=> -30 + i*(60/Math.max(1,drivers.length-1))); // lanes scale to field size
 
 /* overtake wobble: unique per car, decays to zero by 80% of the race */
 const wob = grid.map((d,i)=>({
@@ -725,10 +765,13 @@ function runRace(){
           winnerCelebrated=true;
           const sf = ellipsePoint(Math.PI/2, laneOff[i]);
           spawnFirework(sf.x, sf.y-120, d.color);
+          const burstEvery = IS_FINAL ? 260 : 550;
+          const burstFor   = IS_FINAL ? 9000 : 4500;
           fireworkTimer=setInterval(()=>{
-            spawnFirework(rand(180,LW-180), rand(60,190), grid[Math.floor(rand(0,grid.length))].color);
-          }, 550);
-          setTimeout(()=>{ if(fireworkTimer) clearInterval(fireworkTimer); fireworkTimer=null; }, 4500);
+            spawnFirework(rand(140,LW-140), rand(40,220), grid[Math.floor(rand(0,grid.length))].color);
+            if(IS_FINAL) spawnFirework(rand(140,LW-140), rand(40,220), '#e8b23d');
+          }, burstEvery);
+          setTimeout(()=>{ if(fireworkTimer) clearInterval(fireworkTimer); fireworkTimer=null; }, burstFor);
         }
       }
     });
@@ -768,6 +811,28 @@ function showResults(){
       <td class="val">$${d.bedding.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
       <td class="sweep">${d.bar? '<b class="barBadge">'+d.bar+'</b> ' : ''}${d.sweep? (d.sweep.startsWith('$')? '+ '+d.sweep+' sweepstakes' : d.sweep) : ''}</td></tr>`;
   }).join('');
+  if(IS_FINAL){
+    const champ = ranked[0];
+    document.getElementById('champBanner').innerHTML =
+      '<div class="cbTop">SEASON CHAMPION</div>' +
+      '<div class="cbName">'+champ.name+'</div>' +
+      '<div class="cbVal">$'+champ.bedding.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+
+        ' in delivered bedding'+(champ.bar? ' · '+champ.bar : '')+'</div>' +
+      '<div class="cbFlags"><i></i><i></i><i></i></div>';
+
+    const totalBedding = ranked.reduce((s,d)=>s+d.bedding,0);
+    const barCount = ranked.filter(d=>d.bar).length;
+    const sweepTotal = ranked.reduce((s,d)=>{
+      if(d.sweep && d.sweep.startsWith('$')) return s + parseFloat(d.sweep.replace(/[$,]/g,''));
+      return s; },0);
+    const entries = ranked.filter(d=>d.sweep && !d.sweep.startsWith('$')).length;
+    document.getElementById('seasonStats').innerHTML = [
+      ['$'+totalBedding.toLocaleString(undefined,{maximumFractionDigits:0}),'Team Bedding Total'],
+      [ranked.length,'Racers On Track'],
+      [barCount,'Bar Levels Earned'],
+      ['$'+sweepTotal.toLocaleString(undefined,{maximumFractionDigits:0})+' + '+entries,'Sweepstakes & Entries'],
+    ].map(([v,l])=>'<div class="st"><div class="stVal">'+v+'</div><div class="stLbl">'+l+'</div></div>').join('');
+  }
   resultsEl.classList.add('show');
   resultsEl.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
